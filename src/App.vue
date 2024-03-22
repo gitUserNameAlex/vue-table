@@ -1,26 +1,68 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <v-app>
+    <v-container>
+
+      <users-table :tableData="tableData" @update="updateUser" @delete="deleteUser" />
+
+      <create-form @create="createUser" :tableData="tableData"/>
+
+    </v-container>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+  import axios from 'axios'
+  import UsersTable from './components/UsersTable.vue'
+  import CreateForm from './components/CreateForm.vue'
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
+  export default {
+    name: 'App',
+
+    components: {
+      UsersTable, CreateForm
+    },
+    
+    data() {
+      return {
+        tableData: [],
+      }
+    },
+    
+    methods: {
+      async fetchUsers() {
+        try {
+          const response = await axios.get('https://dummyjson.com/users?limit=8')
+          this.tableData = response.data.users
+        }
+        catch(err) {
+          console.log('Error while fetching users:', err)
+        }
+      },
+
+      createUser(user) {
+        this.tableData.push(user)
+      },
+
+      updateUser(updatedUser) {
+        const index = this.tableData.findIndex(user => user.id === updatedUser.id);
+        this.tableData[index] = { ...updatedUser };
+      },
+
+      deleteUser(userToDelete) {
+        this.tableData = this.tableData.filter((user) => user.id !== userToDelete.id)
+      },
+    },
+
+    mounted() {
+      this.fetchUsers()
+    }
   }
-}
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 </style>
